@@ -1,4 +1,0 @@
-quiz
-====
-
-test project
