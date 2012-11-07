@@ -1,0 +1,96 @@
+<?php $this->load->view('include/header');?>
+<?php $loged_user_data = $this->session->userdata('loged_user')?>
+    <div id="wrapper">
+        <header>
+            <h1>Quiz Creator</h1>
+            <nav>
+                <div class="container_12">
+                    <div class="grid_12">
+                        
+                        <ul class="toolbar clearfix fl">
+<!--                            <li>
+                                <a href="#" title="Activity" class="icon-only" id="activity-button">
+                                    <img src="template/images/navicons-small/77.png" alt=""/>
+                                    <span class="message-count">1</span>
+                                </a>
+                            </li>-->
+                            <li>
+                                <a href="#" title="Notifications" class="icon-only" id="notifications-button">
+                                    <img src="template/images/navicons-small/08.png" alt=""/>
+                                    <span class="message-count">3</span>
+                                </a>
+                            </li>
+                        </ul>
+                        <a href="login/logout" title="Logout" class="button icon-with-text fr"><img src="template/images/navicons-small/129.png" alt=""/>Logout</a>
+                        <div class="user-info fr">
+                           Welcome <?php if($loged_user_data->admin == 1){echo "Admin &raquo;";}?> <?php echo ucfirst($loged_user_data->full_name);?>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+        <section>
+            <!-- Sidebar -->
+
+            <aside> 
+                <nav class="drilldownMenu">
+                    <h1>
+                        <span class="title">Main Menu</span>
+                        <button title="Go Back" class="back">Back</button>
+                    </h1>
+                    <ul class="tlm">
+                        <?php if($loged_user_data->admin == 1):?>
+                        <li ><a href="#main/admin_edit_profile" title="Edit Account"><img src="template/images/navicons/165.png" alt=""/><span>Edit Account</span></a></li>
+                        <li ><a href="#main/admin_view_client" title="Clients"><img src="template/images/navicons/112.png" alt=""/><span>Clients</span></a></li>
+                        <li class="hasul"><a href="#" title="Settings"><img src="template/images/navicons/20.png" alt=""/><span>Settings</span></a>
+                            <ul>
+                                <li><a href="#main/admin_back_up_db" title="BackUP DB"><img src="template/images/navicons/109.png" alt=""/><span>Backup Db</span></a></li>
+                                <li><a href="#main/admin_manage_tempates" title="Manage Template"><img src="template/images/navicons/121.png" alt=""/><span>Email Templates</span></a></li>
+                            </ul>
+                        </li>
+                        <?php else: ?>
+                        <li ><a href="#main/client/edit_profile"><img src="template/images/navicons/165.png" alt=""/><span>Edit profile</span></a></li>
+                        <li class="hasul"><a href="#" title="Forms"><img src="template/images/navicons/112.png" alt=""/><span>Members</span></a>
+                            <ul>
+                                <li><a href="#main/client/view_members" title="View Members"><img src="template/images/navicons/112.png" alt=""/><span>Your Members</span></a></li>
+                                <li><a href="#main/client/member_add" title="Add Member"><img src="template/images/navicons/10.png" alt=""/><span>Add Member</span></a></li>
+                            </ul>
+                        </li>
+                        <li class="hasul"><a href="#" title="Forms"><img src="template/images/navicons/33.png" alt=""/><span>Quizes</span></a>
+                            <ul>
+                                
+                                <li><a href="#main/client_quiz" title="View Members"><img src="template/images/navicons/109.png" alt=""/><span>Your Quizes</span></a></li>
+                                <li><a href="#main/client_quiz/add"  class="add_quize" title="Add quize"><img src="template/images/navicons/10.png" alt=""/><span>Add New Quiz</span></a></li>
+                            </ul>
+                        </li>
+                        <li ><a href="#main/client/"><img src="template/images/navicons/05.png" alt=""/><span>Dasboard</span></a></li>
+                        <li><a href="#main/client/how_its_works" title="View Members"><img src="template/images/navicons/43.png" alt=""/><span>How It Works</span></a></li>
+                  <?php endif;?>
+                    </ul>
+                </nav>
+            </aside>
+
+            <!-- Sidebar End -->
+
+            <section>
+                <header>
+                    <div class="container_12 clearfix">
+                        <a href="#menu" class="showmenu button">Menu</a>
+                        <h1 class="grid_12">Dashboard</h1>
+                    </div>
+                </header>
+                <section id="main-content" class="clearfix">
+                </section>
+                <footer class="clearfix">
+                    <div class="container_12">
+                        <div class="grid_12">
+                            Copyright &copy; 2012 - <?php echo date("Y")?> QuizCreator
+                        </div>
+                    </div>
+                </footer>
+            </section>
+
+            <!-- Main Section End -->
+        </section>
+    </div>
+<?php $this->load->view('include/footer');?>   
