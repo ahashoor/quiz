@@ -5,7 +5,7 @@ class Main extends CI_Controller {
         public function __construct()
         {
             
-            
+            //123123123
             parent::__construct();
             $this->load->model('admin_model');
             
