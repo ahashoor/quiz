@@ -22,7 +22,7 @@ class Main extends CI_Controller {
                 $this->user = $this->admin_model->admin_client_data($client_id);
                 $this->session->set_userdata('loged_user',$this->user);
             }
-            // sdasdasdasdasdasd
+            
             // load language file
             if($this->session->userdata("language") == "en"){
                 $this->lang->load('english', 'english');
