@@ -12,8 +12,6 @@ class Main extends CI_Controller {
             
             $this->load->model('clients_model');
            
-           
-           
             if(!$this->session->userdata('loged_user')){
                 redirect('index');
             }
