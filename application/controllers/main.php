@@ -5,24 +5,22 @@ class Main extends CI_Controller {
         public function __construct()
         {
             
-        
+            
             parent::__construct();
             $this->load->model('admin_model');
-            
-            
             $this->load->model('clients_model');
            
             if(!$this->session->userdata('loged_user')){
                 redirect('index');
             }
-//            $this->user = $this->session->userdata('loged_u ser');
+//            $this->user = $this->session->userdata('loged_user');
             if($this->session->userdata('loged_user')){
                 $client_id = $this->session->userdata('loged_user')->id;
                
                 $this->user = $this->admin_model->admin_client_data($client_id);
                 $this->session->set_userdata('loged_user',$this->user);
             }
-            //asdasdasdasd
+   
             // load language file
             if($this->session->userdata("language") == "en"){
                 $this->lang->load('english', 'english');
