@@ -1,0 +1,433 @@
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
+class Main extends CI_Controller {
+    
+        public function __construct()
+        {
+            parent::__construct();
+            $this->load->model('admin_model');
+            $this->load->model('clients_model');
+//            echo"<script>$('.toolbar').hide();</script>";
+            if(!$this->session->userdata('loged_user')){
+                redirect('login');
+            }
+            $this->user = $this->session->userdata('loged_user');
+	}
+        
+	public function index()
+	{
+		$this->load->view('main_view');
+        
+	}
+        
+        public function client($acction='',$par = ''){
+            switch ($acction) {
+                case 'view_members':
+                    $this->session->set_userdata('new_message','data');
+                        if($members = $this->clients_model->client('get_members',$this->user->id)){
+                            $data['members']= $members;
+                        }else{
+                            $data ['error'] = 'There are no members!';
+                        }
+                        $this->firephp->log($data['members']);
+                        $data['quizes'] = $this->clients_model->quizes('',$this->user->id);
+                        $this->load->view('client_members',$data);
+                    break;
+                
+                case 'member_edit':
+                                   $this->load->view('client_member_edit');
+                    break;
+                
+                case 'member_dispatch':
+                                   $this->load->view('client_member_dispatch');
+                    break;
+                
+                case 'member_apply_quiz':
+                    if($par == 'reload'){
+                        $data['members'] = $this->clients_model->client('get_members',$this->user->id);
+                        $this->load->view('ajax/members_ajax', $data);
+                    }
+                   if($this->input->post('submit') == true){
+                        if($this->clients_model->client('apply_quiz')){
+                            $msg = array('status'=>'succes','msg'=>"Quizes was succeffuly applyed!");
+                        }else{
+                            $msg = array('status'=>'error','msg'=>'There was an error');
+                        }
+                         echo json_encode($msg);
+                   }
+                                   
+                    break;
+                
+                case 'member_add':
+                        
+                        if($par =='settings'){
+                            
+                            $this->load->view('client_members_settings');
+                            
+                        }else{
+                            if($this->input->post('submit') == true){
+                                if($this->form_validation->run('add_member')) {
+                                    if($this->clients_model->client('add_member',$this->user->id)){
+                                        $msg = array('status'=>'succes','msg'=>"Member ".$this->input->post('member_email')." succeffuly added!");
+                                    }else{
+                                        $msg = array('status'=>'error','msg'=>'There was an error');
+                                    }
+
+                                }else{
+                                    $msg =array('status'=>'error','msg'=>validation_errors());
+                                }    
+                                    echo json_encode($msg);
+                            }else{
+
+                                $this->load->view('client_member_add');
+                            } 
+                        }
+                    break;   
+                    //$par = member_id
+                case 'delete_member':
+                         $email = $this->clients_model->client('get_member_email',$par);
+                        
+                        if ($this->clients_model->client('delete_member',$par)) {
+                            $data['success'] = "\"Member " . $email ." was successfully deleted from the database\"";
+                        } else {
+                            $data['del_error'] = "\"Member " . $email ." not deleted successfully\"";
+                        }
+                         $data['members'] = $this->clients_model->client('get_members',$this->user->id);
+                         $this->load->view('ajax/members_ajax', $data);
+                    break;
+                case'edit_profile':
+                        $this->load->view('client_edit_profile');
+                    
+                    break;
+                case'how_its_works':
+                        $this->load->view('client_how_its_work');
+                    break;
+                
+                default:
+                        $this->load->view('client_dashboard');
+                        
+                   break;
+            }
+        }
+        
+        
+        
+        public function client_quiz($acction = '',$par =''){
+            $data['category'] =  $this->clients_model->get_category();
+            $data['answers_type'] = $this->clients_model->get_answers_type();
+            switch ($acction) {
+                
+                case 'view':
+                        $data['quiz'] = $this->clients_model->quizes('by_id',$this->user->id,$par);
+                        $this->load->view('quize_view',$data);
+                    break;
+               
+                    
+                case 'edit':
+                            if($this->input->post('submit') == true){
+                                
+                                if($this->clients_model->quizes('edit',$this->user->id,$this->input->post('quiz_id'))){
+                                    $msg = array('status'=>'succes','msg'=>"Your Quiz ".ucfirst($this->input->post('quiz_name'))." succeffuly updated!");
+                                }else{
+                                    $msg = array('status'=>'error','msg'=>'There was an error');
+                                }
+                                echo json_encode($msg);die();
+                            }
+                            $data['quiz'] = $this->clients_model->quizes('by_id',$this->user->id,$par);
+                         
+                            $this->load->view('client_edit_quiz',$data);
+                    break;
+                    
+                 case 'add':
+                            if($this->input->post('submit') == true){
+                                if($this->clients_model->quizes('add',$this->user->id)){
+                                    $msg = array('status'=>'succes','msg'=>"Your Quiz succeffuly added!");
+                                }else{
+                                    $msg = array('status'=>'error','msg'=>'There was an error');
+                                }
+                                echo json_encode($msg);die();
+                            }
+                            
+                            $this->load->view('client_add_quiz',$data);
+                     break; 
+                  case 'delete':  
+                       $qName = $this->clients_model->quizes('get_name',$par);
+                        
+                        if ($this->clients_model->quizes('delete',$par)) {
+                            $data['success'] = "\"Quiz " . $qName ." was successfully deleted \"";
+                        } else {
+                            $data['del_error'] = "\"Quiz " . $qName ." not deleted successfully\"";
+                        }
+                         $data['quizes'] = $this->clients_model->quizes('',$this->user->id);
+                         $this->load->view('ajax/quiz_ajax', $data);
+                    break;
+                //view client quizes(table)
+                default: if($quize = $this->clients_model->quizes('',$this->user->id)){
+                            $data['quizes']= $quize;
+                        }else{
+                            $data ['error'] = 'There are no quizes!';
+                        }
+                        $this->load->view('client_quizes',$data);
+                    break;
+            }
+        }
+        
+  
+     //-------------------   ADMIN--------------------
+    /**
+     * incarca tabelul cu utilizatori
+     */
+    public function admin_view_client()
+    {
+        $data['clients'] = $this->admin_model->admin_view_clients();
+        $this->load->view('admin/w_manage_clients', $data);
+    }
+    /**
+     * incarca formularul pentru editare
+     * editeaza cimpurile primite by id 
+     */
+    public function admin_edit_client($id)
+    {
+        if ($this->input->post('ajax') == 1) {
+            $new_id = $this->input->post('hid');
+            if ($this->form_validation->run('admin_edit_clients')) {
+                if ($this->admin_model->admin_edit_client($new_id)) {
+                    $data = array('status' => 'succes', 'msg' => "Client " . ucfirst($this->input->
+                            post('full_name')) . " successfully updated");
+                } else {
+                    $data = array('status' => 'error', 'msg' => "Client " . ucfirst($this->input->
+                            post('full_name')) . " was not updated !");
+                }
+            } else {
+                $data = array('status' => 'error', 'msg' => validation_errors());
+            }
+            echo json_encode($data);
+        } else {
+            $data['client'] = $this->admin_model->admin_client_data($id);
+            $this->load->view('admin/w_edit_clients', $data);
+        }
+    }
+    public function load_ajax_table()
+    {
+        $clients['clients'] = $this->admin_model->admin_view_clients();
+        $this->load->view('ajax/clients_ajax', $clients);
+    }
+    /**
+     * delete client by ID 
+     */
+    public function admin_delete_client($id)
+    {
+        $user = $this->admin_model->admin_client_data($id);
+        if (!empty($user)) {
+            $this->admin_model->admin_delete_client($id);
+            $clients['clients'] = $this->admin_model->admin_view_clients();
+            $clients['success'] = "\"Member " . ucfirst($user->full_name) .
+                " was successfully deleted from the database\"";
+            $this->load->view('ajax/clients_ajax', $clients);
+        } else {
+            $clients['clients'] = $this->admin_model->admin_view_clients();
+            $clients['del_error'] = "\"Member " . ucfirst($user->full_name) .
+                " not deleted successfully\"";
+            $this->load->view('ajax/clients_ajax', $clients);
+        }
+    }
+    /**
+     * update status 
+     */
+    public function admin_update_status($id_u)
+    {
+        $user = $this->admin_model->admin_client_data($id_u);
+        ($user->status == 1) ? $id_s = 0 : $id_s = 1;
+        if (!empty($user)) {
+            $this->admin_model->admin_update_status($id_u, $id_s);
+            $clients['clients'] = $this->admin_model->admin_view_clients();
+            $clients['success'] = "\"Member " . ucfirst($user->full_name) .
+                " was update status successfully \"";
+            $this->load->view('ajax/clients_ajax', $clients);
+        } else {
+            $clients['clients'] = $this->admin_model->admin_view_clients();
+            $clients['del_error'] = "\"Member " . ucfirst($user->full_name) .
+                " not update status successfully \"";
+            $this->load->view('ajax/clients_ajax', $clients);
+        }
+    }
+    /**
+     * Back up db
+     */
+    public function admin_back_up_db()
+    {
+        if ($this->input->post('ajax') == 1) {
+            $file_name = $this->input->post('name');
+            if ($file_name == 'db_backup.sql') {
+                $this->admin_model->back_up_db($file_name);
+                $data = array('status' => 'ok', 'msg' => 'Database was successfully saved');
+            } else {
+                $data = array('status' => 'err', 'msg' => 'Database can not be saved ');
+            }
+            echo json_encode($data);
+        } else {
+            $this->load->view('admin/w_back_up_db');
+        }
+    }
+    /**
+     * EDIT  admin profile 
+     */
+    public function admin_edit_profile()
+    {
+        $id = $this->input->post('id');
+        //$mail_profile = $this->input->post('email_profile');
+        //$all_mail_profile['mail_template']= $this->admin_model->admin_view_templates();
+        if ($this->input->post('ajax') == 1) {
+            if ($this->form_validation->run('admin_edit_profile')) {
+                if ($this->admin_model->admin_edit_profile($id)) {
+                    $data = array('status' => 'ok', 'msg' => 'Update successfully ');
+                } else {
+                    $data = array('status' => 'err', 'msg' => 'Update error ');
+                }
+            } else {
+                $data = array('status' => 'error', 'msg' => validation_errors());
+            }
+            echo json_encode($data);
+        } else {
+            $this->load->view('admin/w_edit_admin_profile');
+        }
+    }
+    /**
+     * View clients-members
+     */
+    public function admin_client_members($id)
+    {
+        if ($members = $this->clients_model->client('get_members',$id)){
+            $data['members'] = $members;
+        } else {
+            $data['error'] = 'There are no members!';
+        }
+        $this->load->view('client_members', $data);
+    }
+    /**
+     * View manage templates si atribuire templateuri pe actiuni 
+     */
+    public function admin_manage_tempates()
+    {
+        if ($this->input->post('ajax') == 1) {
+            if ($this->admin_model->admin_update_email_template_assoc()) {
+                $data = array('status' => 'succes', 'msg' => 'atribuire template reusita ');
+            } else {
+                $data = array('status' => 'error', 'msg' => 'atribuire template nereusita');
+            }
+            echo json_encode($data);
+        } else {
+            $data['template_id_name'] = $this->admin_model->get_all_template();
+            $data['templates'] = $this->admin_model->admin_view_templates();
+            $this->load->view('admin/w_manage_templates', $data);
+        }
+    }
+    /**
+     * ADD email template 
+     */
+    public function admin_add_email_template()
+    {
+        if ($this->input->post('ajax') == 1) {
+            if ($this->form_validation->run('admin_add_email_template')) {
+                if ($this->admin_model->admin_add_email_template()) {
+                    $data = array('status' => 'succes', 'msg' => 'Template added successfully');
+                } else {
+                    $data = array('status' => 'error', 'msg' => 'Template added error');
+                }
+            } else {
+                $data = array('status' => 'error', 'msg' => validation_errors());
+            }
+            echo json_encode($data);
+        } else {
+            $this->load->view('admin/w_add_template');
+        }
+    }
+    /**
+     * View edit email template
+     */
+    public function admin_edit_template()
+    {
+        $id = $this->uri->segment(3);
+        if ($this->input->post('ajax') == 1) {
+            if ($this->admin_model->admin_edit_email_templates($id)) {
+                $data = array('status' => 'succes', 'msg' => 'Editing templates success');
+            } else {
+                $data = array('succes' => 'error', 'msg' => 'Editing templates failure');
+            }
+            echo json_encode($data);
+        } else {
+            $data['email_templates'] = $this->admin_model->admin_email_templates($id);
+            $this->load->view('admin/w_edit_template', $data);
+        }
+    }
+    
+    
+    
+    
+    //---------------------------------------
+    public function add_name_email(){
+        
+        if ($this->input->post('ajax') == 1) {
+            if ($this->admin_model->add_name_email()) {
+                $data = array('status' => 'succes', 'msg' => 'nume adaugat cu succes ');
+            } else {
+                $data = array('succes' => 'error', 'msg' => 'eroare mai ');
+            }
+            echo json_encode($data);
+        } else {
+            
+            $this->load->view('admin/w_add_name_email');
+        }
+        
+        
+    }
+    
+      public function get_answer_type(){
+             echo json_encode($this->clients_model->get_answers_type());die();
+        }
+        
+        
+        
+      public function elfinder_init($action)
+        {
+            $this->load->helper('file');
+            $this->load->helper('path');
+            
+            switch ($action) {
+                case 'quiz':
+                            $url = "source/public_quiz_images/".$this->user->id;
+                            $user_gallery_folder = get_filenames($url);
+
+                            if(!file_exists($url)){
+                                mkdir($url);
+                            }
+                            
+                            $opts = array(
+                                        'root'            => set_realpath($url),   
+                                        'URL'             => site_url($url) . '/', 
+                                        'tmbDir'       => '.tmb',
+                                        'dotFiles'     => false,
+                                        'rootAlias'       => 'Your Images Gallery');
+                    break;
+                case 'email_template':
+                               $opts = 
+                                    array( 
+                                        'root'   => set_realpath('source/template_images'), 
+                                        'URL'    => site_url('source/template_images') . '/',
+                                        'rootAlias'  =>'Email Templates'
+                                      );
+                    break;
+            }
+           
+            $this->load->library('elfinder_lib', $opts);
+            
+        }
+        
+        
+        
+     public function load_elfinder(){
+            $this->load->view('elfinder');
+        }
+}
+/* End of file welcome.php */
+/* Location: ./application/controllers/welcome.php */
