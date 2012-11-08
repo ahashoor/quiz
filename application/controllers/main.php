@@ -15,7 +15,7 @@ class Main extends CI_Controller {
             if(!$this->session->userdata('loged_user')){
                 redirect('index');
             }
-//            $this->user = $this->session->userdata('loged_user');
+//            $this->user = $this->session->userdata('loged_u ser');
             if($this->session->userdata('loged_user')){
                 $client_id = $this->session->userdata('loged_user')->id;
                
