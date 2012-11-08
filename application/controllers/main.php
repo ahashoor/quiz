@@ -25,6 +25,9 @@ class Main extends CI_Controller {
             }else{
                  $this->lang->load('romana', 'romana');
             }
+            
+            
+            //spadmaldnaslkd
              if($this->session->userdata('language')=="ro"){
                 $this->form_validation->set_message('required', $this->lang->line('required'));
                 $this->form_validation->set_message('greater_than', $this->lang->line('gt0'));
